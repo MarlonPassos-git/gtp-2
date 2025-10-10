@@ -86,10 +86,26 @@ const QuizOption = ({ option, isSelected, onSelect }) => {
   );
 };
 
-const QuizQuestion = ({ question, value, onChange, progress }) => (
-  <div className="quiz-card" role="group" aria-labelledby={`label-${question.id}`}>
+const QuizQuestion = ({
+  question,
+  value,
+  onChange,
+  progress,
+  index,
+  total,
+  direction
+}) => (
+  <div
+    className={`quiz-card quiz-card--question slide-${direction}`}
+    role="group"
+    aria-labelledby={`label-${question.id}`}
+  >
     <div className="progress" aria-hidden="true">
       <div className="progress-bar" style={{ width: `${progress}%` }} role="presentation"></div>
+    </div>
+    <div className="question-meta">
+      <span className="question-meta__pill">Pergunta {index + 1}</span>
+      <span className="question-meta__total">de {total}</span>
     </div>
     <h3 id={`label-${question.id}`}>{question.question}</h3>
     <p style={{ color: "var(--text-soft)", marginTop: "0.3rem" }}>
@@ -215,6 +231,8 @@ const App = () => {
   const [view, setView] = useState("home");
   const [answers, setAnswers] = useState({});
   const [totals, setTotals] = useState({});
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState("forward");
 
   const progress = useQuizProgress(answers);
   const result = useMemo(() => getTopProfile(totals), [totals]);
@@ -231,11 +249,40 @@ const App = () => {
     setView("result");
   };
 
-  const handleRestart = () => {
+  const resetQuizState = () => {
     setAnswers({});
     setTotals({});
+    setCurrentIndex(0);
+    setDirection("forward");
+  };
+
+  const handleStartQuiz = () => {
+    resetQuizState();
+    setView("quiz");
+  };
+
+  const handleRestart = () => {
+    resetQuizState();
     setView("home");
   };
+
+  const handleNextQuestion = () => {
+    if (currentIndex >= questions.length - 1) return;
+    setDirection("forward");
+    setCurrentIndex((prev) => Math.min(prev + 1, questions.length - 1));
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentIndex === 0) return;
+    setDirection("backward");
+    setCurrentIndex((prev) => Math.max(prev - 1, 0));
+  };
+
+  const currentQuestion = questions[currentIndex];
+  const totalQuestions = questions.length;
+  const questionProgress = Math.round(((currentIndex + 1) / totalQuestions) * 100);
+  const currentAnswer = answers[currentQuestion?.id];
+  const hasAllAnswers = Object.values(answers).filter(Boolean).length >= totalQuestions;
 
   return (
     <div className="page">
@@ -254,7 +301,7 @@ const App = () => {
             <p className="lead">
               Um teste sério e científico (ou não) para revelar qual alter-ego aleatório vive dentro de você.
             </p>
-            <button className="primary-button" onClick={() => setView("quiz")}>
+            <button className="primary-button" onClick={handleStartQuiz}>
               Faça o teste agora
             </button>
           </header>
@@ -283,30 +330,53 @@ const App = () => {
             </div>
           </header>
 
-          <div className="quiz__questions">
-            {questions.map((question, index) => (
+          <div className="quiz__viewport">
+            {currentQuestion && (
               <QuizQuestion
-                key={question.id}
-                question={question}
-                value={answers[question.id]}
-                onChange={(answerId) => handleSelectAnswer(question.id, answerId)}
-                progress={Math.round(((index + 1) / questions.length) * 100)}
+                key={currentQuestion.id}
+                question={currentQuestion}
+                value={currentAnswer}
+                onChange={(answerId) => handleSelectAnswer(currentQuestion.id, answerId)}
+                progress={questionProgress}
+                index={currentIndex}
+                total={totalQuestions}
+                direction={direction}
               />
-            ))}
+            )}
           </div>
 
-          <div className="quiz-actions">
-            <button type="button" className="secondary-button" onClick={handleRestart}>
-              Voltar para home
-            </button>
-            <button
-              type="submit"
-              className="primary-button"
-              disabled={Object.values(answers).filter(Boolean).length < questions.length}
-            >
-              Revelar meu alter-ego
-            </button>
-          </div>
+          <footer className="quiz-footer">
+            <div className="quiz-actions">
+              <button type="button" className="secondary-button" onClick={handleRestart}>
+                Voltar para home
+              </button>
+              <div className="quiz-actions__right">
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={handlePreviousQuestion}
+                  disabled={currentIndex === 0}
+                >
+                  Pergunta anterior
+                </button>
+                {currentIndex < totalQuestions - 1 && (
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={handleNextQuestion}
+                    disabled={!currentAnswer}
+                  >
+                    Próxima pergunta
+                  </button>
+                )}
+                {currentIndex === totalQuestions - 1 && (
+                  <button type="submit" className="primary-button" disabled={!hasAllAnswers}>
+                    Revelar meu alter-ego
+                  </button>
+                )}
+              </div>
+            </div>
+          </footer>
         </form>
       )}
 
