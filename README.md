@@ -8,9 +8,20 @@ Aplicação em React criada para rodar 100% no cliente e pronta para ser publica
 - `npm run dev` – inicia o ambiente de desenvolvimento com Vite.
 - `npm run build` – gera os arquivos estáticos em `dist`.
 - `npm run preview` – serve o build para testes locais.
-- `npm run deploy` – faz o build e publica o conteúdo da pasta `dist` no branch `gh-pages` utilizando o pacote `gh-pages`.
+- `npm run deploy` – faz o build e publica o conteúdo da pasta `dist` no branch `gh-pages` utilizando o pacote `gh-pages` (útil para deploys manuais).
 
 ## Publicando no GitHub Pages
+
+### Deploy automático (recomendado)
+
+O repositório conta com um workflow do GitHub Actions (`.github/workflows/deploy.yml`) que constrói o projeto e publica no GitHub Pages sempre que algo é mesclado no branch `main`.
+
+1. Habilite o GitHub Pages em **Settings → Pages**, escolha **GitHub Actions** como a fonte e salve.
+2. Faça o push do código para o branch `main`.
+3. Abra um pull request ou envie commits diretamente. Assim que o merge for concluído, o workflow fará o build (`npm run build`) e publicará o resultado automaticamente.
+4. Acompanhe o status em **Actions**. Ao final, o ambiente `github-pages` exibirá a URL pública (ex.: `https://usuario.github.io/quiz-meme/`).
+
+### Deploy manual
 
 1. Faça login no GitHub e crie um repositório para o projeto (ex.: `usuario/quiz-meme`).
 2. Faça o push do código para o branch `main` desse repositório.
