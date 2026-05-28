@@ -32,3 +32,11 @@ O repositório conta com um workflow do GitHub Actions (`.github/workflows/deplo
 Caso prefira hospedar direto do branch `main`, basta copiar o conteúdo da pasta `dist` gerada pelo `npm run build` para a pasta `docs/` do repositório e habilitar o Pages para servir a partir dela.
 
 > ℹ️ O arquivo `vite.config.js` já define `base: "./"`, garantindo que os caminhos funcionem corretamente quando o site for servido a partir de uma subpasta do GitHub Pages.
+
+
+## Configuração de base para GitHub Pages
+
+O deploy automático para GitHub Pages (branch `main`) já está configurado em `.github/workflows/deploy.yml`.
+Durante o build de CI, o workflow define `VITE_BASE_PATH` automaticamente como `/<nome-do-repo>/`, garantindo que os assets funcionem corretamente na URL do Pages.
+
+Para desenvolvimento local, nenhuma configuração extra é necessária (`VITE_BASE_PATH` cai para `/`).
